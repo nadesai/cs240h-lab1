@@ -1,7 +1,7 @@
 # Stanford CS240h Lab 1
 
 You will write a simple function that performs [glob
-matching](http://en.wikipedia.org/wiki/Glob_%28programming%29) Glob
+matching](http://en.wikipedia.org/wiki/Glob_%28programming%29). Glob
 matching is a simple form of pattern matching (i.e., regular
 expressions but greatly reduced).
 
