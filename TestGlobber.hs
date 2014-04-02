@@ -13,3 +13,6 @@ main = hspec $ describe "Testing Globber" $ do
       it "shouldn't match non-empty string" $
         matchGlob "" "string" `shouldBe` False
 
+    describe "wildcard pattern" $ do
+      it "matches empty string" $
+         matchGlob "*" "" `shouldBe` True
