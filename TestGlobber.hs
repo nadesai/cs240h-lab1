@@ -18,3 +18,11 @@ main = hspec $ describe "Testing Globber" $ do
          matchGlob "*" "" `shouldBe` True
       it "matches arbitrary string" $
          matchGlob "*" "arbitrary string" `shouldBe` True
+
+    describe "any character pattern" $ do
+      it "does not match empty string" $
+        matchGlob "?" "" `shouldBe` False
+      it "matches one-character string" $
+        matchGlob "?" "a" `shouldBe` True
+      it "does not match multi-character string" $
+        matchGlob "?" "aa" `shouldBe` False
