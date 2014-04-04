@@ -3,13 +3,19 @@ module Globber (matchGlob) where
 type GlobPattern = String
 
 type AtomSequence = [Atom]
-data Atom = AnyCharacter | AnyString | AnyOf String | InRange (Char,Char)
+data Atom = Any | AnyString | AnyOf String | AnyIn (Char,Char)
 
 matchGlob :: GlobPattern -> String -> Bool
-matchGlob pattern str = pattern == str
+matchGlob = matchAtomSequence . toAtomSequence
 
 toAtomSequence :: GlobPattern -> AtomSequence
-toAtomSequence = undefined
+toAtomSequence []   = []
+toAtomSequence (x:xs) = toAtomSequence xs
 
 matchAtomSequence :: AtomSequence -> String -> Bool
-matchAtomSequence = undefined
+matchAtomSequence [] = null -- if our sequence is null, our string must be as well
+matchAtomSequence (a:as) = case a of
+                              Any         -> matchAtomSequence as
+                              AnyString   -> matchAtomSequence as
+                              AnyOf s     -> matchAtomSequence as
+                              AnyIn (c,d) -> matchAtomSequence as
