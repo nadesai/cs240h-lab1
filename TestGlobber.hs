@@ -34,10 +34,12 @@ main = hspec $ describe "Testing Globber" $ do
         matchGlob "?" "aa" `shouldBe` False
 
     describe "escape pattern" $ do
-      it "matches itself" $
+      it "behaves as a literal pattern" $
         matchGlob "\\*" "*" `shouldBe` True
       it "does not execute the corresponding nonliteral pattern" $
         matchGlob "\\*" "" || matchGlob "\\*" "\\" `shouldBe` False
+      it "does not match itself" $
+        matchGlob "\\*" "\\*" `shouldBe` False
 
     describe "range pattern" $ do
       it "matches any character in range" $
