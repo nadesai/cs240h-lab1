@@ -21,14 +21,16 @@ toAtomSequence (x:xs) = case x of
                              _   -> (Literal x):toAtomSequence xs
 
 toRangeAtomSequence :: String -> GlobPattern -> AtomSequence
-toRangeAtomSequence l [] = error "Range ended without closure!" 
-toRangeAtomSequence l s@(x:xs) = case x of
+toRangeAtomSequence _ [] = error "Range ended without closure" 
+toRangeAtomSequence l (x:xs) = case x of
                                     ']' -> (AnyOf l):toAtomSequence xs
-                                    '\\' -> nextLiteral xs
-                                    _   -> toRangeAtomSequence (x:l) xs
-                                 where
-                                    nextLiteral (y:ys) = toRangeAtomSequence (y:l) ys
-                                    nextLiteral [] = error "Range ended without closure!"
+                                    '\\' -> case xs of
+                                                 [] -> error "Range ended without closure"
+                                                 (y:ys) -> toRangeAtomSequence (y:l) ys
+                                    _   -> case xs of
+                                                 [] -> error "Range ended without closure"
+                                                 ('-':z:zs) | z /= ']' -> toRangeAtomSequence ([x..z] ++ l) zs
+                                                 _  -> toRangeAtomSequence (x:l) xs
 
 matchAtomSequence :: AtomSequence -> String -> Bool
 matchAtomSequence a@(ah:as) s@(sh:ss) = case ah of
