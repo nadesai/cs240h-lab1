@@ -10,7 +10,10 @@ matchGlob = matchAtomSequence . toAtomSequence
 
 toAtomSequence :: GlobPattern -> AtomSequence
 toAtomSequence []   = []
-toAtomSequence (x:xs) = (Literal x):toAtomSequence xs
+toAtomSequence (x:xs) = case x of
+                             '*' -> AnyString:toAtomSequence xs
+                             '?' -> Any:toAtomSequence xs
+                             _   -> (Literal x):toAtomSequence xs
 
 matchAtomSequence :: AtomSequence -> String -> Bool
 matchAtomSequence a@(ah:as) s@(sh:ss) = case ah of
