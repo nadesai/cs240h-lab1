@@ -13,13 +13,12 @@ toAtomSequence []   = []
 toAtomSequence (x:xs) = case x of
                              '*' -> AnyString:toAtomSequence xs
                              '?' -> Any:toAtomSequence xs
-                             '\\' -> nextLiteral xs
+                             '\\' -> case xs of
+                                          [] -> error "Terminal escape character"
+                                          (y:ys) -> (Literal y):toAtomSequence ys
                              '[' -> toRangeAtomSequence [] xs
                              ']' -> error "Range closure without corresponding range opener"
                              _   -> (Literal x):toAtomSequence xs
-                        where
-                             nextLiteral (y:ys) = (Literal y):toAtomSequence ys
-                             nextLiteral [] = error "Terminal escape character"
 
 toRangeAtomSequence :: String -> GlobPattern -> AtomSequence
 toRangeAtomSequence l [] = error "Range ended without closure!" 
