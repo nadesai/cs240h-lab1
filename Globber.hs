@@ -28,8 +28,8 @@ toRangeAtomSequence l (x:xs) = case x of
                                                  [] -> error "Range ended without closure"
                                                  (y:ys) -> toRangeAtomSequence (y:l) ys
                                     _   -> case xs of
-                                                 [] -> error "Range ended without closure"
                                                  ('-':z:zs) | z /= ']' -> toRangeAtomSequence ([x..z] ++ l) zs --TODO: change to use Ord only
+                                                 ('-':'\\':z:zs) -> toRangeAtomSequence ([x..z] ++ l) zs
                                                  _  -> toRangeAtomSequence (x:l) xs
 
 matchAtomSequence :: AtomSequence -> String -> Bool
