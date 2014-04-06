@@ -3,7 +3,7 @@ module Globber (matchGlob) where
 type GlobPattern = String
 
 type AtomSequence = [Atom]
-data Atom = Any | AnyString | AnyOf String | Literal Char deriving (Show)
+data Atom = AnyChar | AnyString | AnyOf String | Literal Char deriving (Show)
 
 matchGlob :: GlobPattern -> String -> Bool
 matchGlob = matchAtomSequence . toAtomSequence
@@ -12,7 +12,7 @@ toAtomSequence :: GlobPattern -> AtomSequence
 toAtomSequence []   = []
 toAtomSequence (x:xs) = case x of
                              '*' -> AnyString:toAtomSequence xs
-                             '?' -> Any:toAtomSequence xs
+                             '?' -> AnyChar:toAtomSequence xs
                              '\\' -> case xs of
                                           [] -> error "Terminal escape character"
                                           (y:ys) -> (Literal y):toAtomSequence ys
@@ -34,7 +34,7 @@ toRangeAtomSequence l (x:xs) = case x of
 
 matchAtomSequence :: AtomSequence -> String -> Bool
 matchAtomSequence a@(ah:as) s@(sh:ss) = case ah of
-                              Any       -> matchAtomSequence as ss 
+                              AnyChar   -> matchAtomSequence as ss 
                               AnyString -> matchAtomSequence as s || matchAtomSequence a ss
                               AnyOf str -> (sh `elem` str) && matchAtomSequence as ss
                               Literal c -> (sh == c) && matchAtomSequence as ss
