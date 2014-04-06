@@ -32,3 +32,7 @@ main = hspec $ describe "Testing Globber" $ do
         matchGlob "?" "a" `shouldBe` True
       it "does not match multi-character string" $
         matchGlob "?" "aa" `shouldBe` False
+
+    describe "range pattern" $ do
+      it "matches any character in range" $
+        matchGlob "[abc]" "a" && matchGlob "[abc]" "b" && matchGlob "[abc]" "c" `shouldBe` True
