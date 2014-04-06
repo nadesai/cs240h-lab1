@@ -13,7 +13,11 @@ toAtomSequence []   = []
 toAtomSequence (x:xs) = case x of
                              '*' -> AnyString:toAtomSequence xs
                              '?' -> Any:toAtomSequence xs
+                             '\\' -> nextLiteral xs
                              _   -> (Literal x):toAtomSequence xs
+                        where
+                             nextLiteral (y:ys) = (Literal y):toAtomSequence ys
+                             nextLiteral [] = error "Terminal escape character"
 
 matchAtomSequence :: AtomSequence -> String -> Bool
 matchAtomSequence a@(ah:as) s@(sh:ss) = case ah of
