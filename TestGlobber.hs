@@ -41,6 +41,12 @@ main = hspec $ describe "Testing Globber" $ do
       it "does not match itself" $
         matchGlob "\\*" "\\*" `shouldBe` False
 
-    describe "range pattern" $ do
+    describe "discrete choice pattern" $ do
       it "matches any character in range" $
         matchGlob "[abc]" "a" && matchGlob "[abc]" "b" && matchGlob "[abc]" "c" `shouldBe` True
+
+    describe "range pattern" $ do
+      it "matches any character in range" $
+        matchGlob "[a-z]" "a" && matchGlob "[a-z]" "c" && matchGlob "[a-z]" "z" `shouldBe` True
+      it "does not match characters out of range" $
+        matchGlob "[a-z]" "A" || matchGlob "[a-z]" "*" `shouldBe` False
