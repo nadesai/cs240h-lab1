@@ -3,7 +3,7 @@ module Globber (matchGlob) where
 type GlobPattern = String
 
 type AtomSequence = [Atom]
-data Atom = AnyChar | AnyString | AnyOf String | Literal Char deriving (Show)
+data Atom = AnyChar | AnyString | AnyOf [Char] | Literal Char deriving (Show)
 
 matchGlob :: GlobPattern -> String -> Bool
 matchGlob = matchAtomSequence . toAtomSequence
