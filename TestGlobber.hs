@@ -50,3 +50,9 @@ main = hspec $ describe "Testing Globber" $ do
         matchGlob "[a-z]" "a" && matchGlob "[a-z]" "c" && matchGlob "[a-z]" "z" `shouldBe` True
       it "does not match characters out of range" $
         matchGlob "[a-z]" "A" || matchGlob "[a-z]" "*" `shouldBe` False
+
+    describe "escaping in range pattern" $ do 
+      it "matches any character in range" $
+        matchGlob "[\\a-\\z]" "a" && matchGlob "[\\a-\\z]" "c" && matchGlob "[\\a-\\z]" "z" `shouldBe` True
+      it "does not match characters out of range" $
+        matchGlob "[\\a-\\z]" "A" || matchGlob "[\\a-\\z]" "*" `shouldBe` False

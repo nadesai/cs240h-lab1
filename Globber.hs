@@ -25,8 +25,8 @@ toRangeAtomSequence _ [] = error "Range ended without closure"
 toRangeAtomSequence l (x:xs) = case x of
                                  ']'  -> (AnyOf l):toAtomSequence xs
                                  '\\' -> case xs of
-                                           ('-':'\\':z:zs) -> toRangeAtomSequence ([x..z] ++ l) zs
-                                           ('-':z:zs) | z /= ']' -> toRangeAtomSequence ([x..z] ++ l) zs 
+                                           (y:'-':'\\':z:zs) -> toRangeAtomSequence ([y..z] ++ l) zs
+                                           (y:'-':z:zs) | z /= ']' -> toRangeAtomSequence ([y..z] ++ l) zs 
                                            (y:ys) -> toRangeAtomSequence (y:l) ys
                                            [] -> error "Range ended without closure"
                                  _    -> case xs of
