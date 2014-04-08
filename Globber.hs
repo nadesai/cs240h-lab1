@@ -14,8 +14,8 @@ toAtomSequence (x:xs) = case x of
                           '*'  -> AnyString:toAtomSequence xs
                           '?'  -> AnyChar:toAtomSequence xs
                           '\\' -> case xs of
-                                    [] -> error "Terminal escape character"
                                     (y:ys) -> (Literal y):toAtomSequence ys
+                                    [] -> error "Terminal escape character"
                           '['  -> toRangeAtomSequence [] xs
                           ']'  -> error "Range closure without corresponding range opener"
                           _    -> (Literal x):toAtomSequence xs
@@ -25,11 +25,13 @@ toRangeAtomSequence _ [] = error "Range ended without closure"
 toRangeAtomSequence l (x:xs) = case x of
                                  ']'  -> (AnyOf l):toAtomSequence xs
                                  '\\' -> case xs of
-                                           [] -> error "Range ended without closure"
-                                           (y:ys) -> toRangeAtomSequence (y:l) ys
-                                 _    -> case xs of
-                                           ('-':z:zs) | z /= ']' -> toRangeAtomSequence ([x..z] ++ l) zs --TODO: change to use Ord only
                                            ('-':'\\':z:zs) -> toRangeAtomSequence ([x..z] ++ l) zs
+                                           ('-':z:zs) | z /= ']' -> toRangeAtomSequence ([x..z] ++ l) zs 
+                                           (y:ys) -> toRangeAtomSequence (y:l) ys
+                                           [] -> error "Range ended without closure"
+                                 _    -> case xs of
+                                           ('-':'\\':z:zs) -> toRangeAtomSequence ([x..z] ++ l) zs
+                                           ('-':z:zs) | z /= ']' -> toRangeAtomSequence ([x..z] ++ l) zs
                                            _  -> toRangeAtomSequence (x:l) xs
 
 matchAtomSequence :: AtomSequence -> String -> Bool
