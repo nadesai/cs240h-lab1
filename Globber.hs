@@ -5,9 +5,11 @@ type GlobPattern = String
 type AtomSequence = [Atom]
 data Atom = AnyChar | AnyString | AnyOf [Char] | Literal Char deriving (Show)
 
+-- Matches the given string against the provided glob pattern.
 matchGlob :: GlobPattern -> String -> Bool
 matchGlob = matchAtomSequence . toAtomSequence
 
+-- Converts the given glob pattern into a sequence of Atoms.
 toAtomSequence :: GlobPattern -> AtomSequence
 toAtomSequence []   = []
 toAtomSequence (x:xs) = atom : (toAtomSequence remainder) where
@@ -22,24 +24,27 @@ toAtomSequence (x:xs) = atom : (toAtomSequence remainder) where
                                              ']'  -> error "Range closure without corresponding opener"
                                              _    -> (Literal x, xs)
 
+-- Parses the leading range of the GlobPattern and returns a tuple of a string containing all characters in the range,
+-- and the remaining characters in the pattern.
 parseLeadingRange :: GlobPattern -> ([Char], GlobPattern)
-parseLeadingRange = parseLeadingRange' []
+parseLeadingRange = parseLeadingRange' [] 
+  where
+  parseLeadingRange' :: [Char] -> GlobPattern -> ([Char],GlobPattern)
+  parseLeadingRange' _ [] = error "Range ended without closure" 
+  parseLeadingRange' l (x:xs) | x == ']'  = (l, xs)
+                              | otherwise = parseLeadingRange' l' remainder where
+                                            (l',remainder) = case x of
+                                                               '\\' -> case xs of
+                                                                         (y:'-':'\\':z:zs) -> ([y..z] ++ l, zs)
+                                                                         (y:'-':z:zs) | z /= ']' -> ([y..z] ++ l, zs)
+                                                                         (y:ys) -> (y:l, ys)
+                                                                         [] -> error "Range ended without closure"
+                                                               _    -> case xs of
+                                                                         ('-':'\\':z:zs) -> ([x..z] ++ l, zs)
+                                                                         ('-':z:zs) | z /= ']' -> ([x..z] ++ l, zs)
+                                                                         _  -> (x:l, xs)
 
-parseLeadingRange' :: [Char] -> GlobPattern -> ([Char],GlobPattern)
-parseLeadingRange' _ [] = error "Range ended without closure" 
-parseLeadingRange' l (x:xs) | x == ']'  = (l, xs)
-                            | otherwise = parseLeadingRange' l' remainder where
-                                          (l',remainder) = case x of
-                                                         '\\' -> case xs of
-                                                                   (y:'-':'\\':z:zs) -> ([y..z] ++ l, zs)
-                                                                   (y:'-':z:zs) | z /= ']' -> ([y..z] ++ l, zs)
-                                                                   (y:ys) -> (y:l, ys)
-                                                                   [] -> error "Range ended without closure"
-                                                         _    -> case xs of
-                                                                   ('-':'\\':z:zs) -> ([x..z] ++ l, zs)
-                                                                   ('-':z:zs) | z /= ']' -> ([x..z] ++ l, zs)
-                                                                   _  -> (x:l, xs)
-
+-- Matches the given string against the given AtomSequence.
 matchAtomSequence :: AtomSequence -> String -> Bool
 matchAtomSequence a@(ah:as) s@(sh:ss) = case ah of
                                           AnyChar   -> matchAtomSequence as ss 
