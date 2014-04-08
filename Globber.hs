@@ -10,20 +10,22 @@ matchGlob = matchAtomSequence . toAtomSequence
 
 toAtomSequence :: GlobPattern -> AtomSequence
 toAtomSequence []   = []
-toAtomSequence (x:xs) = case x of
-                          '*'  -> AnyString:toAtomSequence xs
-                          '?'  -> AnyChar:toAtomSequence xs
-                          '\\' -> case xs of
-                                    (y:ys) -> (Literal y):toAtomSequence ys
-                                    [] -> error "Terminal escape character"
-                          '['  -> toRangeAtomSequence [] xs
-                          ']'  -> error "Range closure without corresponding range opener"
-                          _    -> (Literal x):toAtomSequence xs
+toAtomSequence (x:xs) = atom : (toAtomSequence remainder) where
+                        (atom,remainder) = case x of
+                                             '*'  -> (AnyString, xs)
+                                             '?'  -> (AnyChar, xs)
+                                             '\\' -> case xs of
+                                                       (y:ys) -> (Literal y, ys)
+                                                       [] -> error "Terminal escape character"
+                                             '['  -> let (l,ys) = toRangeAtomSequence [] xs in 
+                                                     (AnyOf l, ys)
+                                             ']'  -> error "Range closure without corresponding range opener"
+                                             _    -> (Literal x, xs)
 
-toRangeAtomSequence :: String -> GlobPattern -> AtomSequence
+toRangeAtomSequence :: [Char] -> GlobPattern -> ([Char],GlobPattern)
 toRangeAtomSequence _ [] = error "Range ended without closure" 
 toRangeAtomSequence l (x:xs) = case x of
-                                 ']'  -> (AnyOf l):toAtomSequence xs
+                                 ']'  -> (l,xs)
                                  '\\' -> case xs of
                                            (y:'-':'\\':z:zs) -> toRangeAtomSequence ([y..z] ++ l) zs
                                            (y:'-':z:zs) | z /= ']' -> toRangeAtomSequence ([y..z] ++ l) zs 
