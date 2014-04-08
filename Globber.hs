@@ -17,24 +17,28 @@ toAtomSequence (x:xs) = atom : (toAtomSequence remainder) where
                                              '\\' -> case xs of
                                                        (y:ys) -> (Literal y, ys)
                                                        [] -> error "Terminal escape character"
-                                             '['  -> let (l,ys) = toRangeAtomSequence [] xs in 
+                                             '['  -> let (l,ys) = parseLeadingRange xs in 
                                                      (AnyOf l, ys)
-                                             ']'  -> error "Range closure without corresponding range opener"
+                                             ']'  -> error "Range closure without corresponding opener"
                                              _    -> (Literal x, xs)
 
-toRangeAtomSequence :: [Char] -> GlobPattern -> ([Char],GlobPattern)
-toRangeAtomSequence _ [] = error "Range ended without closure" 
-toRangeAtomSequence l (x:xs) = case x of
-                                 ']'  -> (l,xs)
-                                 '\\' -> case xs of
-                                           (y:'-':'\\':z:zs) -> toRangeAtomSequence ([y..z] ++ l) zs
-                                           (y:'-':z:zs) | z /= ']' -> toRangeAtomSequence ([y..z] ++ l) zs 
-                                           (y:ys) -> toRangeAtomSequence (y:l) ys
-                                           [] -> error "Range ended without closure"
-                                 _    -> case xs of
-                                           ('-':'\\':z:zs) -> toRangeAtomSequence ([x..z] ++ l) zs
-                                           ('-':z:zs) | z /= ']' -> toRangeAtomSequence ([x..z] ++ l) zs
-                                           _  -> toRangeAtomSequence (x:l) xs
+parseLeadingRange :: GlobPattern -> ([Char], GlobPattern)
+parseLeadingRange = parseLeadingRange' []
+
+parseLeadingRange' :: [Char] -> GlobPattern -> ([Char],GlobPattern)
+parseLeadingRange' _ [] = error "Range ended without closure" 
+parseLeadingRange' l (x:xs) | x == ']'  = (l, xs)
+                            | otherwise = parseLeadingRange' l' remainder where
+                                          (l',remainder) = case x of
+                                                         '\\' -> case xs of
+                                                                   (y:'-':'\\':z:zs) -> ([y..z] ++ l, zs)
+                                                                   (y:'-':z:zs) | z /= ']' -> ([y..z] ++ l, zs)
+                                                                   (y:ys) -> (y:l, ys)
+                                                                   [] -> error "Range ended without closure"
+                                                         _    -> case xs of
+                                                                   ('-':'\\':z:zs) -> ([x..z] ++ l, zs)
+                                                                   ('-':z:zs) | z /= ']' -> ([x..z] ++ l, zs)
+                                                                   _  -> (x:l, xs)
 
 matchAtomSequence :: AtomSequence -> String -> Bool
 matchAtomSequence a@(ah:as) s@(sh:ss) = case ah of
