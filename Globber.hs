@@ -27,10 +27,12 @@ toRangeAtomSequence l (x:xs) = case x of
                                  ']'  -> (AnyOf l):toAtomSequence xs
                                  '\\' -> case xs of
                                            [] -> error "Range ended without closure"
+                                           (y:'-':'\\':z:zs) -> toRangeAtomSequence ((Range y z):l) zs
+                                           (y:'-':z:zs) | z /= ']' -> toRangeAtomSequence ((Range y z):l) zs
                                            (y:ys) -> toRangeAtomSequence ((Lit y):l) ys
                                  _    -> case xs of
-                                           ('-':z:zs) | z /= ']' -> toRangeAtomSequence ((Range x z):l) zs
                                            ('-':'\\':z:zs) -> toRangeAtomSequence ((Range x z):l) zs
+                                           ('-':z:zs) | z /= ']' -> toRangeAtomSequence ((Range x z):l) zs
                                            _  -> toRangeAtomSequence ((Lit x):l) xs
 
 matchAtomSequence :: AtomSequence -> String -> Bool
